@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/masuda-masuo/mcp-inspect/internal/classifier"
-	"github.com/masuda-masuo/mcp-inspect/internal/i18n"
 	"github.com/masuda-masuo/mcp-inspect/internal/config"
 	"github.com/masuda-masuo/mcp-inspect/internal/fetcher"
+	"github.com/masuda-masuo/mcp-inspect/internal/i18n"
 )
 
 // ToolReport is a tool enriched with warning badges.
@@ -175,13 +175,12 @@ func enrichNoLaunch(sr *ServerReport) {
 		}
 	default:
 		sr.RuntimeKind = "binary"
-		// binary: package name not needed, command itself is shown
 		sr.AllowedPaths = pathArgs(sr.Args)
 	}
 }
 
 func nodeScriptToPackage(scriptPath string) string {
-	p := strings.ReplaceAll(scriptPath, "\\", "/")
+	p := strings.ReplaceAll(scriptPath, "\\\\", "/")
 	idx := strings.Index(p, "node_modules/")
 	if idx < 0 {
 		return filepath.Base(scriptPath)
@@ -205,5 +204,5 @@ func pathArgs(args []string) []string {
 }
 
 func looksLikePath(s string) bool {
-	return strings.ContainsAny(s, "/\\") || strings.HasPrefix(s, "~")
+	return strings.ContainsAny(s, "/\\\\") || strings.HasPrefix(s, "~")
 }

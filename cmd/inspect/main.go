@@ -23,8 +23,8 @@ import (
 	"strings"
 
 	"github.com/masuda-masuo/mcp-inspect/internal/config"
-	"github.com/masuda-masuo/mcp-inspect/internal/i18n"
 	"github.com/masuda-masuo/mcp-inspect/internal/fetcher"
+	"github.com/masuda-masuo/mcp-inspect/internal/i18n"
 	"github.com/masuda-masuo/mcp-inspect/internal/reporter"
 )
 
@@ -52,28 +52,26 @@ func main() {
 }
 
 func run(configPath, outputPath, format string, noOpen, noLaunch bool, lang i18n.Lang) error {
-	// 1. Load config
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		return fmt.Errorf("loading config: %w", err)
 	}
-	fmt.Fprintf(os.Stderr, "→ Config: %s (%d servers)\n", cfg.Path, len(cfg.Servers))
+	fmt.Fprintf(os.Stderr, "\u2192 Config: %s (%d servers)\n", cfg.Path, len(cfg.Servers))
 
 	if len(cfg.Servers) == 0 {
 		fmt.Fprintln(os.Stderr, "  No servers found in config.")
 	}
 
-	// 2. Build report
 	var report *reporter.Report
 	if noLaunch {
-		fmt.Fprintln(os.Stderr, "→ --no-launch: skipping server startup, showing config only")
+		fmt.Fprintln(os.Stderr, "\u2192 --no-launch: skipping server startup, showing config only")
 		report = reporter.BuildNoLaunch(cfg, lang)
 	} else {
-		fmt.Fprintln(os.Stderr, "→ Launching servers and fetching tool lists...")
+		fmt.Fprintln(os.Stderr, "\u2192 Launching servers and fetching tool lists...")
 		results := fetcher.FetchAll(cfg)
 		for _, r := range results {
 			if r.Error != "" {
-				fmt.Fprintf(os.Stderr, "  [%s] ⚠ error: %s\n", r.ServerName, r.Error)
+				fmt.Fprintf(os.Stderr, "  [%s] \u26a0 error: %s\n", r.ServerName, r.Error)
 			} else {
 				fmt.Fprintf(os.Stderr, "  [%s] %d tools\n", r.ServerName, len(r.Tools))
 			}
@@ -81,7 +79,6 @@ func run(configPath, outputPath, format string, noOpen, noLaunch bool, lang i18n
 		report = reporter.Build(cfg, results, lang)
 	}
 
-	// 3. Write output
 	switch strings.ToLower(format) {
 	case "json":
 		w := os.Stdout
@@ -92,7 +89,7 @@ func run(configPath, outputPath, format string, noOpen, noLaunch bool, lang i18n
 			}
 			defer f.Close()
 			w = f
-			fmt.Fprintf(os.Stderr, "→ JSON written to %s\n", outputPath)
+			fmt.Fprintf(os.Stderr, "\u2192 JSON written to %s\n", outputPath)
 		}
 		return reporter.WriteJSON(w, report)
 
@@ -109,7 +106,7 @@ func run(configPath, outputPath, format string, noOpen, noLaunch bool, lang i18n
 			return err
 		}
 		abs, _ := filepath.Abs(outputPath)
-		fmt.Fprintf(os.Stderr, "→ Report written to %s\n", abs)
+		fmt.Fprintf(os.Stderr, "\u2192 Report written to %s\n", abs)
 		if !noOpen {
 			openBrowser(abs)
 		}
@@ -120,7 +117,6 @@ func run(configPath, outputPath, format string, noOpen, noLaunch bool, lang i18n
 	}
 }
 
-// openBrowser opens a file URL in the default browser.
 func openBrowser(path string) {
 	url := "file://" + path
 	var cmd *exec.Cmd

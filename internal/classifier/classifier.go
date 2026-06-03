@@ -50,7 +50,7 @@ var externalSendNameKeywords = []string{
 
 var destructiveDescKeywords = []string{
 	"cannot be undone", "irreversible", "permanently delete",
-	"取り消せません", "元に戻せません",
+	"\u53d6\u308a\u6d88\u305b\u307e\u305b\u3093", "\u5143\u306b\u623b\u305b\u307e\u305b\u3093",
 }
 
 var writeDescKeywords = []string{
@@ -58,8 +58,8 @@ var writeDescKeywords = []string{
 }
 
 var externalSendDescKeywords = []string{
-	"sends to external", "external endpoint", "外部エンドポイント",
-	"外部サービスに送信",
+	"sends to external", "external endpoint", "\u5916\u90e8\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8",
+	"\u5916\u90e8\u30b5\u30fc\u30d3\u30b9\u306b\u9001\u4fe1",
 }
 
 // Classify returns warnings for a tool given its name and description.
