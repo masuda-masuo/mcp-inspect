@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "safe-server": {
+      "command": "testdata/mock-servers/safe/mock-server"
+    },
+    "destructive-server": {
+      "command": "testdata/mock-servers/destructive/mock-server"
+    },
+    "hidden-tools-server": {
+      "command": "testdata/mock-servers/hidden-tools/mock-server"
+    }
+  }
+}
