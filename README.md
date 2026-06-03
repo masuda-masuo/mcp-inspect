@@ -171,16 +171,7 @@ mcp-inspect (this tool)
   → Visualize tool surface, spot surprises
   → Human decides what to allow → configure in MCP client
 
-[At launch — automatic]
-mcp-launcher
-  → Secret injection, token rotation
-  → Auto-block CAT-1/CAT-2 attacks via tools/list proxy
-  → Audit log
 ```
-
-`mcp-inspect` is intentionally standalone — no shared code with `mcp-launcher`.
-
----
 
 ## License
 
