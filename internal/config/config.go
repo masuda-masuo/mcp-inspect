@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 // ServerConfig represents a single MCP server entry.
@@ -22,13 +23,47 @@ type Config struct {
 }
 
 // defaultPaths returns candidate config file paths in priority order.
+// On Windows, Claude Desktop is installed as a UWP app whose data directory
+// is under AppData\Local\Packages\Claude_<random>\LocalCache\Roaming\Claude\.
+// We glob for that pattern so users don't need to specify --config manually.
 func defaultPaths() []string {
 	home, _ := os.UserHomeDir()
-	return []string{
+
+	candidates := []string{
+		// Standard / cross-platform locations
 		filepath.Join(home, ".claude", "claude_desktop_config.json"),
 		filepath.Join(home, ".claude.json"),
 		"mcp.json",
 	}
+
+	if runtime.GOOS == "windows" {
+		candidates = append(windowsClaudePaths(home), candidates...)
+	}
+
+	return candidates
+}
+
+// windowsClaudePaths globs for Claude Desktop's UWP data directory.
+// The package folder name has the form "Claude_<id>" where <id> varies
+// per installation, so we cannot hard-code the full path.
+func windowsClaudePaths(home string) []string {
+	localAppData := os.Getenv("LOCALAPPDATA")
+	if localAppData == "" {
+		localAppData = filepath.Join(home, "AppData", "Local")
+	}
+
+	pattern := filepath.Join(
+		localAppData,
+		"Packages", "Claude_*",
+		"LocalCache", "Roaming", "Claude",
+		"claude_desktop_config.json",
+	)
+
+	matches, err := filepath.Glob(pattern)
+	if err != nil || len(matches) == 0 {
+		return nil
+	}
+	return matches
 }
 
 // Load reads a config file. If path is empty it tries the default locations.
