@@ -33,10 +33,6 @@ Your README (open in another tab):    mcp-inspect report:
                                         - delete_repo        ← destructive
                                         - add_collaborator
                                         - transfer_repo      ← destructive
-```
-
-`mcp-inspect` does not block anything. Blocking is [mcp-launcher](https://github.com/masuda-masuo/mcp-launcher)'s job.
-
 ---
 
 ## Install
