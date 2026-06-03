@@ -23,44 +23,63 @@ type Config struct {
 }
 
 // defaultPaths returns candidate config file paths in priority order.
-// On Windows, Claude Desktop is installed as a UWP app whose data directory
-// is under AppData\Local\Packages\Claude_<random>\LocalCache\Roaming\Claude\.
-// We glob for that pattern so users don't need to specify --config manually.
 func defaultPaths() []string {
 	home, _ := os.UserHomeDir()
 
-	candidates := []string{
-		// Standard / cross-platform locations
+	var candidates []string
+
+	switch runtime.GOOS {
+	case "windows":
+		// Claude Desktop on Windows ships as a UWP app.
+		// Primary path: %APPDATA%\Claude\claude_desktop_config.json
+		// Fallback: glob the UWP package directory (package id suffix varies per install).
+		appData := os.Getenv("APPDATA")
+		if appData == "" {
+			appData = filepath.Join(home, "AppData", "Roaming")
+		}
+		candidates = append(candidates,
+			filepath.Join(appData, "Claude", "claude_desktop_config.json"),
+		)
+		candidates = append(candidates, windowsUWPPaths(home)...)
+
+	case "darwin":
+		candidates = append(candidates,
+			filepath.Join(home, "Library", "Application Support", "Claude", "claude_desktop_config.json"),
+		)
+
+	default: // linux and others
+		configHome := os.Getenv("XDG_CONFIG_HOME")
+		if configHome == "" {
+			configHome = filepath.Join(home, ".config")
+		}
+		candidates = append(candidates,
+			filepath.Join(configHome, "Claude", "claude_desktop_config.json"),
+		)
+	}
+
+	// Cross-platform fallbacks (Claude Code / manual locations)
+	candidates = append(candidates,
 		filepath.Join(home, ".claude", "claude_desktop_config.json"),
 		filepath.Join(home, ".claude.json"),
 		"mcp.json",
-	}
-
-	if runtime.GOOS == "windows" {
-		candidates = append(windowsClaudePaths(home), candidates...)
-	}
+	)
 
 	return candidates
 }
 
-// windowsClaudePaths globs for Claude Desktop's UWP data directory.
-// The package folder name has the form "Claude_<id>" where <id> varies
-// per installation, so we cannot hard-code the full path.
-func windowsClaudePaths(home string) []string {
+// windowsUWPPaths globs for the Claude Desktop UWP package directory.
+// The folder name has the form "Claude_<random-id>" and varies per installation.
+func windowsUWPPaths(home string) []string {
 	localAppData := os.Getenv("LOCALAPPDATA")
 	if localAppData == "" {
 		localAppData = filepath.Join(home, "AppData", "Local")
 	}
-
 	pattern := filepath.Join(
-		localAppData,
-		"Packages", "Claude_*",
-		"LocalCache", "Roaming", "Claude",
-		"claude_desktop_config.json",
+		localAppData, "Packages", "Claude_*",
+		"LocalCache", "Roaming", "Claude", "claude_desktop_config.json",
 	)
-
 	matches, err := filepath.Glob(pattern)
-	if err != nil || len(matches) == 0 {
+	if err != nil {
 		return nil
 	}
 	return matches
@@ -89,7 +108,7 @@ func Load(path string) (*Config, error) {
 	return nil, fmt.Errorf("no config file found; tried: %v", candidates)
 }
 
-// raw is used only for unmarshalling – supports both key spellings.
+// raw is used only for unmarshalling.
 type raw struct {
 	MCPServers map[string]ServerConfig `json:"mcpServers"`
 }
